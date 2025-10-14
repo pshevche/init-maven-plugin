@@ -5,37 +5,97 @@
     <artifactId>init-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>init-maven-plugin Maven Mojo</name>
+    <name>A Maven plugin for quickly creating and initializing new Maven projects</name>
     <url>http://maven.apache.org</url>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <libs.versions.assertj.core>3.27.6</libs.versions.assertj.core>
+        <libs.versions.junit.jupiter>5.14.0</libs.versions.junit.jupiter>
+        <libs.versions.maven.invoker>3.3.0</libs.versions.maven.invoker>
+        <libs.versions.maven.plugin.api>3.9.11</libs.versions.maven.plugin.api>
+        <libs.versions.maven.plugin.plugin>3.15.1</libs.versions.maven.plugin.plugin>
+        <libs.versions.maven.plugin.annotations>3.15.1</libs.versions.maven.plugin.annotations>
+        <libs.versions.maven.plugin.testing.harness>3.3.0</libs.versions.maven.plugin.testing.harness>
+        <libs.versions.maven.surefire.plugin>3.5.4</libs.versions.maven.surefire.plugin>
+        <libs.versions.mustache.compiler>0.9.14</libs.versions.mustache.compiler>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.9.11</version>
+            <version>${libs.versions.maven.plugin.api}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+            <version>${libs.versions.maven.plugin.annotations}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.spullara.mustache.java</groupId>
             <artifactId>compiler</artifactId>
-            <version>0.9.14</version>
+            <version>${libs.versions.mustache.compiler}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
-            <version>3.3.0</version>
+            <version>${libs.versions.maven.plugin.testing.harness}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.0-M2</version>
+            <version>${libs.versions.junit.jupiter}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-invoker</artifactId>
+            <version>${libs.versions.maven.invoker}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${libs.versions.assertj.core}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>${libs.versions.maven.plugin.plugin}</version>
+                <configuration>
+                    <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-descriptor</id>
+                        <goals>
+                            <goal>descriptor</goal>
+                            <goal>helpmojo</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${libs.versions.maven.surefire.plugin}</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
