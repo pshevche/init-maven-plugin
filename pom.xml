@@ -14,6 +14,7 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <libs.versions.annotations>26.0.2-1</libs.versions.annotations>
         <libs.versions.assertj.core>3.27.6</libs.versions.assertj.core>
         <libs.versions.junit.jupiter>5.14.0</libs.versions.junit.jupiter>
         <libs.versions.maven.invoker>3.3.0</libs.versions.maven.invoker>
@@ -26,6 +27,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${libs.versions.annotations}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
