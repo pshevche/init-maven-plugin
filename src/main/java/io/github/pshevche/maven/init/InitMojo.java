@@ -1,5 +1,8 @@
 package io.github.pshevche.maven.init;
 
+import io.github.pshevche.maven.init.options.InitOption;
+import io.github.pshevche.maven.init.options.ProjectType;
+import io.github.pshevche.maven.init.options.TestFramework;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -11,10 +14,7 @@ import java.io.Console;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 import static io.github.pshevche.maven.init.internal.JavaVersionDetector.detectJavaMajorVersion;
 import static io.github.pshevche.maven.init.internal.StringUtil.defaultIfBlank;
@@ -28,17 +28,6 @@ import static java.util.Objects.requireNonNull;
     threadSafe = true
 )
 public class InitMojo extends AbstractMojo {
-
-    private static final Set<String> SUPPORTED_TYPES = new HashSet<>(Arrays.asList(
-        "java-application",
-        "java-library"
-    ));
-    private static final Set<String> SUPPORTED_TEST_FW = new HashSet<>(Arrays.asList(
-        "junit",
-        "junit-jupiter",
-        "spock",
-        "testng"
-    ));
 
     @Parameter(defaultValue = "${project.basedir}", readonly = true, required = true)
     private File baseDir;
@@ -115,12 +104,13 @@ public class InitMojo extends AbstractMojo {
         Console console = System.console();
 
         if (isBlank(type)) {
-            type = readChoice(
+            type = readIndexedChoice(
                 console,
-                "Select type of project to generate (default: app) [app/lib]: ",
-                SUPPORTED_TYPES,
-                "app"
-            );
+                "Select type of project to generate:",
+                ProjectType.values(),
+                1,
+                String.format("Enter selection (default: %s) [1..2]: ", ProjectType.APPLICATION.label())
+            ).label();
         }
         if (isBlank(projectName)) {
             String defaultProjectName = baseDir.getName();
@@ -143,12 +133,13 @@ public class InitMojo extends AbstractMojo {
             );
         }
         if (isBlank(testFramework)) {
-            testFramework = readChoice(
+            testFramework = readIndexedChoice(
                 console,
-                "Select test framework (default: junit-jupiter) [junit-jupiter/junit4/testng/spock]: ",
-                SUPPORTED_TEST_FW,
-                "junit-jupiter"
-            );
+                "Select test framework:",
+                TestFramework.values(),
+                4,
+                String.format("Enter selection (default: %s) [1..4]: ", TestFramework.JUNIT_JUPITER.label())
+            ).label();
         }
         if (isBlank(javaVersion)) {
             String defaultJavaVersion = detectJavaMajorVersion();
@@ -163,14 +154,33 @@ public class InitMojo extends AbstractMojo {
         return s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", ".").replaceAll("^\\.+|\\.+$", "");
     }
 
-    private static String readChoice(Console console, String prompt, Set<String> allowed, String def) {
+    private static InitOption readIndexedChoice(
+        Console console,
+        String title,
+        InitOption[] options,
+        int defaultIndex,
+        String selectionPrompt
+    ) {
+        console.printf("%s%n", title);
+        for (int i = 0; i < options.length; i++) {
+            console.printf("  %d: %s%n", i + 1, options[i].label());
+        }
+
         while (true) {
-            String val = console.readLine(prompt);
-            String v = defaultIfBlank(val, def).toLowerCase(Locale.ROOT);
-            if (allowed.contains(v)) {
-                return v;
+            String input = console.readLine(selectionPrompt);
+            String trimmed = input == null ? "" : input.trim();
+            if (isBlank(trimmed)) {
+                return options[defaultIndex - 1];
             }
-            console.printf("Invalid choice. Allowed: %s%n", allowed);
+
+            try {
+                int idx = Integer.parseInt(trimmed);
+                if (idx >= 1 && idx <= options.length) {
+                    return options[idx - 1];
+                }
+            } catch (NumberFormatException ignored) {
+                console.printf("Please enter a number between 1 and %d:", options.length);
+            }
         }
     }
 
