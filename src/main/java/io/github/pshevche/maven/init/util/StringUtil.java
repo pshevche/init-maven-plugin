@@ -1,4 +1,4 @@
-package io.github.pshevche.maven.init.internal;
+package io.github.pshevche.maven.init.util;
 
 import org.jetbrains.annotations.Nullable;
 

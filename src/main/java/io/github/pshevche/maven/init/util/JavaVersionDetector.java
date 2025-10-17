@@ -1,8 +1,8 @@
-package io.github.pshevche.maven.init.internal;
+package io.github.pshevche.maven.init.util;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
-import static io.github.pshevche.maven.init.internal.StringUtil.isBlank;
+import static io.github.pshevche.maven.init.util.StringUtil.isBlank;
 
 public class JavaVersionDetector {
 

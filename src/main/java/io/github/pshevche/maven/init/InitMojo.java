@@ -1,8 +1,7 @@
 package io.github.pshevche.maven.init;
 
-import io.github.pshevche.maven.init.options.InitOption;
-import io.github.pshevche.maven.init.options.ProjectType;
-import io.github.pshevche.maven.init.options.TestFramework;
+import io.github.pshevche.maven.init.config.ConfigurationReader;
+import io.github.pshevche.maven.init.config.InitConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -10,16 +9,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Console;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
 
-import static io.github.pshevche.maven.init.internal.JavaVersionDetector.detectJavaMajorVersion;
-import static io.github.pshevche.maven.init.internal.StringUtil.defaultIfBlank;
-import static io.github.pshevche.maven.init.internal.StringUtil.isBlank;
-import static java.util.Objects.requireNonNull;
+import static io.github.pshevche.maven.init.util.StringUtil.isBlank;
 
 @Mojo(
     name = "init",
@@ -61,11 +55,18 @@ public class InitMojo extends AbstractMojo {
         ensureEmptyWorkingDirectory();
         failIfMissingParametersAndNonInteractive();
 
-        promptForMissingParameterValues();
-        logSpecifiedConfiguration();
+        ConfigurationReader reader = new ConfigurationReader(baseDir);
+        InitConfiguration options = reader.read(
+            type,
+            projectName,
+            groupId,
+            packageName,
+            testFramework,
+            javaVersion
+        );
 
-        // Generation will be implemented in subsequent steps (templates, pom writing,
-        // etc.)
+        logSpecifiedConfiguration(options);
+        // Generation will be implemented in subsequent steps (templates, pom writing, etc.)
     }
 
     private void ensureEmptyWorkingDirectory() throws MojoExecutionException {
@@ -100,97 +101,13 @@ public class InitMojo extends AbstractMojo {
         return System.console() != null;
     }
 
-    private void promptForMissingParameterValues() throws MojoExecutionException {
-        Console console = System.console();
-
-        if (isBlank(type)) {
-            type = readIndexedChoice(
-                console,
-                "Select type of project to generate:",
-                ProjectType.values(),
-                1,
-                String.format("Enter selection (default: %s) [1..2]: ", ProjectType.APPLICATION.label())
-            ).label();
-        }
-        if (isBlank(projectName)) {
-            String defaultProjectName = baseDir.getName();
-            projectName = defaultIfBlank(
-                console.readLine("Project name/artifactId (default: %s): ", defaultProjectName),
-                defaultProjectName
-            );
-        }
-        if (isBlank(groupId)) {
-            groupId = defaultIfBlank(
-                console.readLine("Project groupId (default: %s): ", "com.example"),
-                "com.example"
-            );
-        }
-        if (isBlank(packageName)) {
-            String defaultPackage = groupId + "." + sanitizePackage(requireNonNull(projectName));
-            packageName = defaultIfBlank(
-                console.readLine("Package name (default: %s): ", defaultPackage),
-                defaultPackage
-            );
-        }
-        if (isBlank(testFramework)) {
-            testFramework = readIndexedChoice(
-                console,
-                "Select test framework:",
-                TestFramework.values(),
-                4,
-                String.format("Enter selection (default: %s) [1..4]: ", TestFramework.JUNIT_JUPITER.label())
-            ).label();
-        }
-        if (isBlank(javaVersion)) {
-            String defaultJavaVersion = detectJavaMajorVersion();
-            javaVersion = defaultIfBlank(
-                console.readLine("Java version (default: %s): ", defaultJavaVersion),
-                defaultJavaVersion
-            );
-        }
-    }
-
-    private static String sanitizePackage(String s) {
-        return s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", ".").replaceAll("^\\.+|\\.+$", "");
-    }
-
-    private static InitOption readIndexedChoice(
-        Console console,
-        String title,
-        InitOption[] options,
-        int defaultIndex,
-        String selectionPrompt
-    ) {
-        console.printf("%s%n", title);
-        for (int i = 0; i < options.length; i++) {
-            console.printf("  %d: %s%n", i + 1, options[i].label());
-        }
-
-        while (true) {
-            String input = console.readLine(selectionPrompt);
-            String trimmed = input == null ? "" : input.trim();
-            if (isBlank(trimmed)) {
-                return options[defaultIndex - 1];
-            }
-
-            try {
-                int idx = Integer.parseInt(trimmed);
-                if (idx >= 1 && idx <= options.length) {
-                    return options[idx - 1];
-                }
-            } catch (NumberFormatException ignored) {
-                console.printf("Please enter a number between 1 and %d:", options.length);
-            }
-        }
-    }
-
-    private void logSpecifiedConfiguration() {
+    private void logSpecifiedConfiguration(InitConfiguration options) {
         getLog().info("Initializing Maven project with options:");
-        getLog().info("  type=" + type);
-        getLog().info("  name=" + projectName);
-        getLog().info("  groupId=" + groupId);
-        getLog().info("  packageName=" + packageName);
-        getLog().info("  testFramework=" + testFramework);
-        getLog().info("  javaVersion=" + javaVersion);
+        getLog().info("  type=" + options.getProjectType());
+        getLog().info("  name=" + options.getProjectName());
+        getLog().info("  groupId=" + options.getGroupId());
+        getLog().info("  packageName=" + options.getPackageName());
+        getLog().info("  testFramework=" + options.getTestFramework());
+        getLog().info("  javaVersion=" + options.getJavaVersion());
     }
 }
