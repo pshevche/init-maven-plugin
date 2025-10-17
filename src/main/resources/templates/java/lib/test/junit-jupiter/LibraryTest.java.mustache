@@ -1,0 +1,14 @@
+package {{packageName}};
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class LibraryTest {
+    @Test
+    void shouldReturnGreeting() {
+        Library lib = new Library();
+        assertEquals("Hello, {{projectName}}!", lib.getGreeting());
+    }
+}
+
+

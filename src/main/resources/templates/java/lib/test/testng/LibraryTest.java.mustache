@@ -1,0 +1,14 @@
+package {{packageName}};
+
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
+
+public class LibraryTest {
+    @Test
+    public void shouldReturnGreeting() {
+        Library lib = new Library();
+        assertEquals("Hello, {{projectName}}!", lib.getGreeting());
+    }
+}
+
+

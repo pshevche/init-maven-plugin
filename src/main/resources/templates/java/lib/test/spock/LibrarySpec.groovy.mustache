@@ -1,0 +1,15 @@
+package {{packageName}}
+
+import spock.lang.Specification
+
+class LibrarySpec extends Specification {
+    def "should return greeting"() {
+        when:
+        def lib = new Library()
+
+        then:
+        lib.getGreeting() == "Hello, {{projectName}}!"
+    }
+}
+
+
