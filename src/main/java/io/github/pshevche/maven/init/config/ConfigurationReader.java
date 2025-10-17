@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import static io.github.pshevche.maven.init.util.JavaVersionDetector.detectJavaMajorVersion;
 import static io.github.pshevche.maven.init.util.ObjectUtil.firstNonNull;
+import static io.github.pshevche.maven.init.util.StringUtil.defaultIfBlank;
 import static io.github.pshevche.maven.init.util.StringUtil.isBlank;
 
 public final class ConfigurationReader {
@@ -27,31 +28,32 @@ public final class ConfigurationReader {
         String groupId,
         String packageName,
         String testFramework,
-        String javaVersion) throws MojoExecutionException {
-        ProjectType finalType = isBlank(type)
+        String javaVersion
+    ) throws MojoExecutionException {
+        var finalType = isBlank(type)
             ? selectProjectType()
             : ProjectType.from(type);
 
-        String finalProjectName = readOptionValue(
+        var finalProjectName = readOptionValue(
             "Project name/artifactId",
             projectName,
             baseDir.getName());
 
-        String finalGroupId = readOptionValue(
+        var finalGroupId = readOptionValue(
             "Project groupId",
             groupId,
             "com.example");
 
-        String finalPackage = readOptionValue(
+        var finalPackage = readOptionValue(
             "Package name",
             packageName,
             finalGroupId + "." + sanitizePackage(finalProjectName));
 
-        TestFramework finalFramework = isBlank(testFramework)
+        var finalFramework = isBlank(testFramework)
             ? selectTestFramework()
             : TestFramework.from(testFramework);
 
-        int finalJavaVersion = Integer.parseInt(
+        var finalJavaVersion = Integer.parseInt(
             readOptionValue(
                 "Java version",
                 javaVersion,
@@ -85,27 +87,28 @@ public final class ConfigurationReader {
     private String readOptionValue(String title, @Nullable String paramValue, String defaultValue) {
         return firstNonNull(
             paramValue,
-            console.readLine("%s (default: %s): ", title, defaultValue),
-            defaultValue);
+            defaultIfBlank(console.readLine("%s (default: %s): ", title, defaultValue), defaultValue)
+        );
     }
 
     private <T extends FixedChoiceInitOption> T readIndexedChoice(
         String title,
         String selectionPrompt,
         T[] availableOptions,
-        int defaultIndex) {
+        int defaultIndex
+    ) {
         console.printf("%s%n", title);
-        for (int i = 0; i < availableOptions.length; i++) {
+        for (var i = 0; i < availableOptions.length; i++) {
             console.printf("  %d: %s%n", i + 1, availableOptions[i].label());
         }
         while (true) {
-            String input = console.readLine(selectionPrompt);
-            String trimmed = input == null ? "" : input.trim();
+            var input = console.readLine(selectionPrompt);
+            var trimmed = input == null ? "" : input.trim();
             if (isBlank(trimmed)) {
                 return availableOptions[defaultIndex - 1];
             }
             try {
-                int idx = Integer.parseInt(trimmed);
+                var idx = Integer.parseInt(trimmed);
                 if (idx >= 1 && idx <= availableOptions.length) {
                     return availableOptions[idx - 1];
                 }

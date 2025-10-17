@@ -8,7 +8,7 @@ public class ObjectUtil {
     }
 
     @Nullable
-    public static <T> T firstNonNull(T... values) {
+    public static <T> T firstNonNull(@SuppressWarnings("unchecked") T... values) {
         for (T v : values) {
             if (v != null) {
                 return v;
