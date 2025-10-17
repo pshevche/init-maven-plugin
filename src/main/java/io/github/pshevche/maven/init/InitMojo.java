@@ -1,5 +1,6 @@
 package io.github.pshevche.maven.init;
 
+import io.github.pshevche.maven.init.builder.ProjectBuilder;
 import io.github.pshevche.maven.init.config.ConfigurationReader;
 import io.github.pshevche.maven.init.config.InitConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
@@ -55,8 +56,8 @@ public class InitMojo extends AbstractMojo {
         ensureEmptyWorkingDirectory();
         failIfMissingParametersAndNonInteractive();
 
-        ConfigurationReader reader = new ConfigurationReader(baseDir);
-        InitConfiguration options = reader.read(
+        var reader = new ConfigurationReader(baseDir);
+        var config = reader.read(
             type,
             projectName,
             groupId,
@@ -65,13 +66,13 @@ public class InitMojo extends AbstractMojo {
             javaVersion
         );
 
-        logSpecifiedConfiguration(options);
-        // Generation will be implemented in subsequent steps (templates, pom writing, etc.)
+        var builder = new ProjectBuilder(config);
+        builder.initializeProject(baseDir.toPath());
     }
 
     private void ensureEmptyWorkingDirectory() throws MojoExecutionException {
         try {
-            Path dir = baseDir.toPath();
+            var dir = baseDir.toPath();
             if (Files.exists(dir) && Files.list(dir).findFirst().isPresent()) {
                 throw new MojoExecutionException("Target directory is not empty: " + baseDir.getAbsolutePath());
             }
@@ -99,15 +100,5 @@ public class InitMojo extends AbstractMojo {
 
     private boolean isInteractiveSession() {
         return System.console() != null;
-    }
-
-    private void logSpecifiedConfiguration(InitConfiguration options) {
-        getLog().info("Initializing Maven project with options:");
-        getLog().info("  type=" + options.getProjectType());
-        getLog().info("  name=" + options.getProjectName());
-        getLog().info("  groupId=" + options.getGroupId());
-        getLog().info("  packageName=" + options.getPackageName());
-        getLog().info("  testFramework=" + options.getTestFramework());
-        getLog().info("  javaVersion=" + options.getJavaVersion());
     }
 }
