@@ -2,7 +2,6 @@ package io.github.pshevche.maven.init;
 
 import io.github.pshevche.maven.init.builder.ProjectBuilder;
 import io.github.pshevche.maven.init.config.ConfigurationReader;
-import io.github.pshevche.maven.init.config.InitConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -12,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static io.github.pshevche.maven.init.util.StringUtil.isBlank;
 
@@ -26,10 +24,6 @@ public class InitMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project.basedir}", readonly = true, required = true)
     private File baseDir;
-
-    @Nullable
-    @Parameter(property = "type")
-    private String type;
 
     @Nullable
     @Parameter(property = "groupId")
@@ -58,7 +52,6 @@ public class InitMojo extends AbstractMojo {
 
         var reader = new ConfigurationReader(baseDir);
         var config = reader.read(
-            type,
             projectName,
             groupId,
             packageName,
@@ -90,8 +83,7 @@ public class InitMojo extends AbstractMojo {
     }
 
     private boolean hasMissingParameters() {
-        return isBlank(type)
-            || isBlank(projectName)
+        return isBlank(projectName)
             || isBlank(groupId)
             || isBlank(packageName)
             || isBlank(testFramework)

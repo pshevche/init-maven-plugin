@@ -2,7 +2,6 @@ package io.github.pshevche.maven.init.config;
 
 public final class InitConfiguration {
 
-    private final ProjectType projectType;
     private final String projectName;
     private final String groupId;
     private final String packageName;
@@ -10,23 +9,17 @@ public final class InitConfiguration {
     private final int javaVersion;
 
     public InitConfiguration(
-        ProjectType projectType,
         String projectName,
         String groupId,
         String packageName,
         TestFramework testFramework,
         int javaVersion
     ) {
-        this.projectType = projectType;
         this.projectName = projectName;
         this.groupId = groupId;
         this.packageName = packageName;
         this.testFramework = testFramework;
         this.javaVersion = javaVersion;
-    }
-
-    public ProjectType getProjectType() {
-        return projectType;
     }
 
     public String getProjectName() {

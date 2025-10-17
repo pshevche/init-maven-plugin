@@ -23,17 +23,12 @@ public final class ConfigurationReader {
     }
 
     public InitConfiguration read(
-        String type,
         String projectName,
         String groupId,
         String packageName,
         String testFramework,
         String javaVersion
     ) throws MojoExecutionException {
-        var finalType = isBlank(type)
-            ? selectProjectType()
-            : ProjectType.from(type);
-
         var finalProjectName = readOptionValue(
             "Project name/artifactId",
             projectName,
@@ -60,7 +55,6 @@ public final class ConfigurationReader {
                 detectJavaMajorVersion()));
 
         return new InitConfiguration(
-            finalType,
             finalProjectName,
             finalGroupId,
             finalPackage,
@@ -68,16 +62,8 @@ public final class ConfigurationReader {
             finalJavaVersion);
     }
 
-    private ProjectType selectProjectType() {
-        return readIndexedChoice(
-            "Select type of project to generate:",
-            String.format("Enter selection (default: %s) [1..2]: ", ProjectType.APPLICATION.label()),
-            ProjectType.values(),
-            1);
-    }
-
     private TestFramework selectTestFramework() {
-        return readIndexedChoice(
+        return readFixedChoice(
             "Select test framework:",
             String.format("Enter selection (default: %s) [1..4]: ", TestFramework.JUNIT_JUPITER.label()),
             TestFramework.values(),
@@ -91,7 +77,7 @@ public final class ConfigurationReader {
         );
     }
 
-    private <T extends FixedChoiceInitOption> T readIndexedChoice(
+    private <T extends FixedChoiceInitOption> T readFixedChoice(
         String title,
         String selectionPrompt,
         T[] availableOptions,
